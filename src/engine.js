@@ -192,6 +192,7 @@ export class JEngine {
     };
     this.onWin = null;
     this.onLose = null;
+    this.turnInterpolation = 6;
   }
   // controls
   setUpControls_() {
@@ -256,9 +257,29 @@ export class JEngine {
     this.render();
   }
   handleTurnDirection_(offset) {
+    const startDirection = this.player.direction;
     this.player.changeDirection(offset);
+    const endDirection  = this.player.direction;
     this.update();
-    this.render();
+    // this.render();
+    this._interpolateDirection(startDirection,endDirection, this.turnInterpolation);
+  }
+  _interpolateDirection(startDirection, endDirection, count=2) {
+    const dir0 = DIRECTIONS[startDirection];
+    const dir1 = DIRECTIONS[endDirection];
+    const directions = [...new Array(count)].map((_,i)=>((i+1)/(count))).map((f) => [dir0[0]*(1-f)+dir1[0]*f, dir0[1]*(1-f)+dir1[1]*f])
+    let i = 0;
+    const renderTurn = () => {
+      if (i >= directions.length) {
+        this.player.dir_ = null;
+        this.render();
+        return;
+      }
+      this.player.dir_ = directions[i++];
+      this.renderFirstPersonView_();
+      setTimeout(renderTurn, 200/count);
+    }
+    setTimeout(renderTurn, 200/count);
   }
   handleInteract_() {
     const npos = this.player.getNextPosition();
@@ -450,7 +471,7 @@ export class JEngine {
     const view = createView(this.vsize);
     const vcolor = createVColor(this.vsize);
     const vpos = this.player.pos.map((v) => v + 0.5);
-    const vdir = DIRECTIONS[this.player.direction];
+    const vdir = this.player.dir_ ?? DIRECTIONS[this.player.direction];
     renderMapToView(
       vpos,
       vdir,

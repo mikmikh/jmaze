@@ -146,7 +146,7 @@ export function renderMapToViewSprites2(
   sdata,
   msize,
   fMaxDistance,
-  vcolor = null
+  vcolor = null,
 ) {
   let fDistance = 1;
   const pcell = vpos.map((v) => Math.floor(v));
