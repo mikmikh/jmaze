@@ -3,10 +3,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JASCII</title>
+    <title>JMaze</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h2>Hello</h2>
+    <div class="stats" id="stats"></div>
+    <div class="float-left">
+      <div class="row">
+        <button id="btn-fs"><pre>full</button>
+      <button id="btn-map">map</button>
+      </div>
+      </div>
+    <div class="float">
+      <div class="row">
+        <input type="number" value="1" min="0" max="1000" id="input-level" />
+        <button id="btn-level">load</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="controls">
+        <div class="col">
+          
+          <button id="btn-forward">Forward (W)</button>
+          <div class="row">
+            <button id="btn-left">L (A)</button>
+            <button id="btn-right">R (D)</button>
+          </div>
+          <button id="btn-turn">Turn (S)</button>
+        </div>
+      </div>
+
+      <div class="game-container">
+        <div class="dungeon-view">
+          <div id="view-color" class="grid"></div>
+        </div>
+        <div class="dungeon-view" style="display: none">
+          <pre id="view"></pre>
+        </div>
+        <div class="minimap" style="display: none">
+          <pre id="minimap"></pre>
+        </div>
+        <div class="minimap">
+          <div id="minimap-color" class="grid"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="col">
+          <button id="btn-interact">Interact (E)</button>
+          <button id="btn-scroll">Next Item (Q)</button>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="controls">
+      <div class="row">
+        <div class="col">
+          <button id="btn-forward">Forward (W)</button>
+          <div>
+            <button id="btn-left">Left (A)</button>
+            <button id="btn-right">Right (D)</button>
+          </div>
+        </div>
+        <div class="col">
+          <button id="btn-interact">Interact (E)</button>
+          <button id="btn-scroll">Next Item (Q)</button>
+        </div>
+      </div>
+    </div> -->
+
+    <div class="message-log" id="messages"></div>
+
+    <!-- <script type="module" src="/src/main.js"></script> -->
+    <!-- <script type="module" src="./src/test_pazzle.js"></script> -->
+    <!-- <script type="module" src="./src/run_engine.js"></script> -->
+    <script type="module" src="./src/run_engine_pazzle.js"></script>
   </body>
 </html>
