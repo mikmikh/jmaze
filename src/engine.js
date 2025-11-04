@@ -4,6 +4,7 @@ import {
   DIRECTIONS,
   ITEM_CHAR_ARR,
   KEY_CHAR_ARR,
+  LEVEL_CHAR_NAMES,
   LEVEL_CHARS,
   LOCK_CHAR_ARR,
   MINIMAP_COLORS,
@@ -173,17 +174,6 @@ export class JLevel {
   toString(player, size_) {
     const data_ = this.toData_(player, size_);
     return data_.map((r) => r.join("")).join("\n");
-    //   return this.data
-    //     .map((r, ri) =>
-    //       r
-    //         .map((v, ci) =>
-    //           ri === player.pos[0] && ci === player.pos[1]
-    //             ? DIRECTION_CHARS[player.direction]
-    //             : v
-    //         )
-    //         .join("")
-    //     )
-    //     .join("\n");
   }
 }
 
@@ -200,7 +190,8 @@ export class JEngine {
       interval: null,
       maxScore: 0,
     };
-    this.onFinish = null;
+    this.onWin = null;
+    this.onLose = null;
   }
   // controls
   setUpControls_() {
@@ -266,6 +257,7 @@ export class JEngine {
   }
   handleTurnDirection_(offset) {
     this.player.changeDirection(offset);
+    this.update();
     this.render();
   }
   handleInteract_() {
@@ -283,20 +275,20 @@ export class JEngine {
       // check have a key
       if (this.player.hasItem(val.toLocaleLowerCase())) {
         this.level.setValAt(npos, LEVEL_CHARS.PATH);
-        this.addMessage(`Opened the door ${val}`);
+        this.addMessage(`Opened ${LEVEL_CHAR_NAMES[val] ?? val}`);
       } else {
-        this.addMessage(`The door is locked with ${val}`);
+        this.addMessage(`The door is locked with ${LEVEL_CHAR_NAMES[val] ?? val}`);
       }
     } else if (KEY_CHAR_ARR.includes(val) || ITEM_CHAR_ARR.includes(val)) {
       this.player.addItem(val);
       this.level.setValAt(npos, LEVEL_CHARS.PATH);
-      this.addMessage(`Found ${val}`);
+      this.addMessage(`Found ${LEVEL_CHAR_NAMES[val] ?? val}`);
     } else if (val === LEVEL_CHARS.ENEMY) {
       this.level.setValAt(npos, LEVEL_CHARS.PATH);
-      this.addMessage(`Defeated ${val}`);
+      this.addMessage(`Defeated ${LEVEL_CHAR_NAMES[val] ?? val}`);
     } else if (this.tryUseItem_()) {
     } else if (val === LEVEL_CHARS.START) {
-      this.addMessage(`Start location`);
+      this.addMessage(`This is ${LEVEL_CHAR_NAMES[val] ?? val}`);
     } else if (val === LEVEL_CHARS.EXIT) {
       this.handleLevelFinished();
     } else {
@@ -306,7 +298,6 @@ export class JEngine {
     this.render();
   }
   handleLevelFinished() {
-    this.addMessage(`Level Finished`);
     const t = this.statsInfo.timer;
     const timeStr = `${padVal(Math.floor(t / 60))}:${padVal(t % 60)}`;
     const score = this.player.items.filter(
@@ -314,8 +305,8 @@ export class JEngine {
     ).length;
     const maxScore = this.statsInfo.maxScore;
 
-    alert(`Level Finished!\nTime: ${timeStr}\nScore: ${score}\\${maxScore}`);
-    this.onFinish?.();
+    this.addMessage(`Level Finished!\nTime: ${timeStr}\nScore: ${score}\\${maxScore}`);
+    this.onWin?.();
   }
   tryUseItem_() {
     const item = this.player.getItem();
@@ -325,7 +316,7 @@ export class JEngine {
     if (item === "&") {
       this.player.heal(20);
       this.player.removeItem();
-      this.addMessage(`Used potion`);
+      this.addMessage(`Used ${LEVEL_CHAR_NAMES[item] ?? item}`);
       this.renderStats();
       return true;
     } else if (item === LEVEL_CHARS.SWORD) {
@@ -338,7 +329,7 @@ export class JEngine {
       const val = this.level.getValAt(npos);
       if (val === LEVEL_CHARS.ENEMY) {
         this.level.setValAt(npos, LEVEL_CHARS.PATH);
-        this.addMessage(`Defeated ${val}`);
+        this.addMessage(`Defeated ${LEVEL_CHAR_NAMES[val] ?? val}`);
         this.player.removeItem();
         this.update();
         this.render();
@@ -403,11 +394,11 @@ export class JEngine {
       const val = this.level.getValAt(npos);
       if (val === LEVEL_CHARS.ENEMY) {
         this.player.hit(20);
-        this.addMessage(`Got hit by ${val}`);
+        this.addMessage(`Taken 20dmg from ${LEVEL_CHAR_NAMES[val] ?? val}`);
         this.effect("glitch");
         if (this.player.hp <= 0) {
-          this.addMessage(`Game over`);
-          alert("GAME OVER");
+          this.addMessage(`Game over, restarting...`);
+          this.onLose?.();
         }
       }
     }
@@ -419,7 +410,7 @@ export class JEngine {
     if (KEY_CHAR_ARR.includes(pval) || ITEM_CHAR_ARR.includes(pval)) {
       this.player.addItem(pval);
       this.level.setValAt(ppos, LEVEL_CHARS.PATH);
-      this.addMessage(`Found ${pval}`);
+      this.addMessage(`Found ${LEVEL_CHAR_NAMES[pval] ?? pval}`);
     }
   }
   // render
@@ -532,6 +523,6 @@ export class JEngine {
     view.classList.add(name);
     setInterval(() => {
       view.classList.remove(name);
-    }, 100);
+    }, 500);
   }
 }

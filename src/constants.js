@@ -21,6 +21,16 @@ export const LEVEL_CHARS = {
   SWORD: "!",
   MONEY: "$",
 };
+export const LEVEL_CHAR_NAMES = {};
+Object.keys(LEVEL_CHARS).forEach(name => {
+  LEVEL_CHAR_NAMES[LEVEL_CHARS[name]] = name.toLocaleLowerCase();
+});
+KEY_CHAR_ARR.forEach((char) => {
+  LEVEL_CHAR_NAMES[char] = `key ${char}`;
+});
+LOCK_CHAR_ARR.forEach((char) => {
+  LEVEL_CHAR_NAMES[char] = `lock ${char}`;
+});
 export const SOLID_TILE_SET = new Set([
   LEVEL_CHARS.EMPTY,
   LEVEL_CHARS.WALL,

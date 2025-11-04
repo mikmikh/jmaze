@@ -136,7 +136,7 @@ pre {
   text-shadow: 0.1em 0.1em rgba(246, 0, 153,0.8),
              -0.1em -0.1em rgba(15, 210, 255,0.8),
              0.1em -0.1em rgba(255, 210, 0, 1);
-  animation: wiggle 0.4s;
+  animation: wiggle 0.5s;
 }
 
 

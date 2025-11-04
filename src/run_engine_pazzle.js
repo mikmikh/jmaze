@@ -131,7 +131,9 @@ function main() {
     engine.renderMiniMap_();
   });
 
+  let level = 1;
   function loadLevel(i) {
+    level = i;
     const levelData = createLevel(i);
     engine.setUpLevel(levelData, `${i}`);
   }
@@ -140,11 +142,13 @@ function main() {
   // engine.minMapSize = isMobile? [16,16] :[32, 32];
   engine.setUpControls_();
 
-  let level = 1;
-  engine.onFinish = () => {
-    level++;
-    const levelData = createLevel(level);
-    engine.setUpLevel(levelData, `${level}`);
+  
+  engine.onWin = () => {
+    loadLevel(level+1);
+  };
+
+  engine.onLose = () => {
+    loadLevel(level);
   };
 
   // const levelData = [
