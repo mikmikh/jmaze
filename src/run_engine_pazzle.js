@@ -24,10 +24,10 @@ const CONFIG_DEFAULT = {
 
 const CONFIG_DEFAULT2 = {
   msize: [16, 16],
-  seed: 11,
+  seed: 13,
   lockCount: 1,
   enemyCount: 0,
-  items: { "&": 1, $: 1, "!": 1 },
+  items: { "&": 1, $: 1, "!": 1,'Y':1 },
 };
 
 function levelFromConfig(conf) {
@@ -67,7 +67,7 @@ function createLevel(i = 0) {
   if (i > 0) {
     config = JSON.parse(JSON.stringify(CONFIG_DEFAULT2));
     config.seed += i;
-    config.enemyCount += Math.floor(i / 2);
+    config.enemyCount += i;//Math.floor(i / 2);
     config.msize[0] += Math.floor(i / 2) * 2;
     config.msize[1] += Math.floor(i / 2) * 2;
 

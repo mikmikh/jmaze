@@ -9,7 +9,7 @@ export const DIRECTIONS = [
 export const DIRECTION_CHARS = ["^", ">", "v", "<"];
 export const KEY_CHAR_ARR = Array.from("abcdfghij");
 export const LOCK_CHAR_ARR = KEY_CHAR_ARR.map((c) => c.toUpperCase());
-export const ITEM_CHAR_ARR = "&!$";
+export const ITEM_CHAR_ARR = "&!$Y";
 export const LEVEL_CHARS = {
   WALL: "#",
   PATH: ".",
@@ -20,6 +20,7 @@ export const LEVEL_CHARS = {
   POTION: "&",
   SWORD: "!",
   MONEY: "$",
+  TORCH: "Y",
 };
 export const LEVEL_CHAR_NAMES = {};
 Object.keys(LEVEL_CHARS).forEach(name => {
@@ -47,6 +48,7 @@ export const SPRITE_TILE_SET = new Set([
 // RENDER
 export const RENDER_CHARS =
   "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+  // Array.from("$@B%8&WM#ZO0QLCJUYX/|()1{}[]?!lI;:,\"^`'.").reverse();
 // export const RENDER_CHARS = "░▒▓█";
 
 function createLockSprite(letter = "A") {
@@ -116,17 +118,26 @@ export const SPIRTE_PATTERNS = {
     `█████`, //
   ],
   $: [
-    `..$..`, //
-    `..$..`, //
-    `$$$$$`, //
-    `..$..`, //
-    `..$..`, //
+    `..█...`, //
+    `.███..`, //
+    `█.█...`, //
+    `.███..`, //
+    `..█.█.`, //
+    `.███..`, //
+    `..█...`, //
   ],
   "!": [
     `..█..`, //
     `..█..`, //
     `..█..`, //
     `.███.`, //
+    `..█..`, //
+  ],
+  "Y": [
+    `█.█.█`, //
+    `.███.`, //
+    `..█..`, //
+    `..█..`, //
     `..█..`, //
   ],
 };
@@ -143,11 +154,12 @@ const COLOR_PALETTE = [
 
 export const SPRITE_COLORS = {
   S: "yellow",
-  E: "orange",
+  E: "darkorange",
   "!": "cyan",
   "&": "lime",
   z: "red",
   $: "gold",
+  Y: "orange",
 };
 
 LOCK_CHAR_ARR.forEach((letter,i) => {

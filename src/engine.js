@@ -46,7 +46,7 @@ class JPlayer {
     this.direction = direction;
     this.hp = 100;
     this.maxHp = 100;
-    this.items = [];// ["!"];
+    this.items = []; // ["!"];
     this.itemIdx = 0;
   }
   changeDirection(offset) {
@@ -205,7 +205,6 @@ export class JEngine {
       q: () => this.handleScrollItem_(),
     };
     document.addEventListener("keydown", (e) => {
-      
       const key = e.key.toLocaleLowerCase();
       if (key in handlers) {
         e.preventDefault();
@@ -237,6 +236,7 @@ export class JEngine {
     }, 1000);
   }
   handleMoveForward_() {
+    const prevPos=  this.player.pos;
     const npos = this.player.getNextPosition();
     if (!this.level.isPosInside(npos)) {
       this.addMessage(`Cannot move here`);
@@ -255,19 +255,29 @@ export class JEngine {
     this.player.pos = npos;
     this.update();
     this.render();
+    // this._iterateForward(prevPos,npos);
   }
   handleTurnDirection_(offset) {
     const startDirection = this.player.direction;
     this.player.changeDirection(offset);
-    const endDirection  = this.player.direction;
+    const endDirection = this.player.direction;
     this.update();
     // this.render();
-    this._interpolateDirection(startDirection,endDirection, this.turnInterpolation);
+    this._interpolateDirection(
+      startDirection,
+      endDirection,
+      this.turnInterpolation
+    );
   }
-  _interpolateDirection(startDirection, endDirection, count=2) {
+  _interpolateDirection(startDirection, endDirection, count = 2,time=100) {
     const dir0 = DIRECTIONS[startDirection];
     const dir1 = DIRECTIONS[endDirection];
-    const directions = [...new Array(count)].map((_,i)=>((i+1)/(count))).map((f) => [dir0[0]*(1-f)+dir1[0]*f, dir0[1]*(1-f)+dir1[1]*f])
+    const directions = [...new Array(count)]
+      .map((_, i) => (i + 1) / count)
+      .map((f) => [
+        dir0[0] * (1 - f) + dir1[0] * f,
+        dir0[1] * (1 - f) + dir1[1] * f,
+      ]);
     let i = 0;
     const renderTurn = () => {
       if (i >= directions.length) {
@@ -277,9 +287,30 @@ export class JEngine {
       }
       this.player.dir_ = directions[i++];
       this.renderFirstPersonView_();
-      setTimeout(renderTurn, 200/count);
-    }
-    setTimeout(renderTurn, 200/count);
+      setTimeout(renderTurn, time / count);
+    };
+    setTimeout(renderTurn, time / count);
+  }
+  _iterateForward(spos, epos, count = 2, time=100) {
+    const positions = [...new Array(count)]
+      .map((_, i) => (i + 1) / count)
+      .map((f) => [
+        spos[0] * (1 - f) + epos[0] * f,
+        spos[1] * (1 - f) + epos[1] * f,
+      ]);
+
+    let i = 0;
+    const renderTurn = () => {
+      if (i >= positions.length) {
+        this.player.pos_ = null;
+        this.render();
+        return;
+      }
+      this.player.pos_ = positions[i++];
+      this.renderFirstPersonView_();
+      setTimeout(renderTurn, time / count);
+    };
+    setTimeout(renderTurn, time / count);
   }
   handleInteract_() {
     const npos = this.player.getNextPosition();
@@ -298,7 +329,9 @@ export class JEngine {
         this.level.setValAt(npos, LEVEL_CHARS.PATH);
         this.addMessage(`Opened ${LEVEL_CHAR_NAMES[val] ?? val}`);
       } else {
-        this.addMessage(`The door is locked with ${LEVEL_CHAR_NAMES[val] ?? val}`);
+        this.addMessage(
+          `The door is locked with ${LEVEL_CHAR_NAMES[val] ?? val}`
+        );
       }
     } else if (KEY_CHAR_ARR.includes(val) || ITEM_CHAR_ARR.includes(val)) {
       this.player.addItem(val);
@@ -326,7 +359,9 @@ export class JEngine {
     ).length;
     const maxScore = this.statsInfo.maxScore;
 
-    this.addMessage(`Level Finished!\nTime: ${timeStr}\nScore: ${score}\\${maxScore}`);
+    this.addMessage(
+      `Level Finished!\nTime: ${timeStr}\nScore: ${score}\\${maxScore}`
+    );
     this.onWin?.();
   }
   tryUseItem_() {
@@ -383,9 +418,9 @@ export class JEngine {
       this.level.msize
     );
     this.player = new JPlayer(pos);
-    this.statsInfo.maxScore = this.level.data.flat().filter(
-      (item) => item === LEVEL_CHARS.MONEY
-    ).length;
+    this.statsInfo.maxScore = this.level.data
+      .flat()
+      .filter((item) => item === LEVEL_CHARS.MONEY).length;
     this.render();
     this.renderStats();
     this.setUpStats_();
@@ -398,14 +433,14 @@ export class JEngine {
       this.level.data,
       this.level.rdata,
       this.level.msize,
-      3
+      8
     );
     this.handleEvents();
     this.level.update();
   }
   handleEvents() {
     const ppos = this.player.pos;
-    
+
     for (const direction of DIRECTIONS) {
       const npos = [ppos[0] + direction[0], ppos[1] + direction[1]];
 
@@ -470,8 +505,12 @@ export class JEngine {
   renderFirstPersonView_() {
     const view = createView(this.vsize);
     const vcolor = createVColor(this.vsize);
-    const vpos = this.player.pos.map((v) => v + 0.5);
+    const vpos = (this.player.pos_ ?? this.player.pos).map((v) => v + 0.5);
     const vdir = this.player.dir_ ?? DIRECTIONS[this.player.direction];
+    let shade = "sides";
+    if (this.player.getItem() === LEVEL_CHARS.TORCH) {
+      shade = [32, 32, 8];
+    }
     renderMapToView(
       vpos,
       vdir,
@@ -482,6 +521,7 @@ export class JEngine {
       Math.PI / 2,
       this.fMaxDistance,
       vcolor,
+      shade
     );
     renderMapToViewSprites2(
       vpos,
@@ -509,7 +549,7 @@ export class JEngine {
     // items
     return view;
   }
-  renderGrid_(fpv,vcolor=null) {
+  renderGrid_(fpv, vcolor = null) {
     const viewEl = document.getElementById("view-color");
     viewEl.innerHTML = "";
     viewEl.style = `
@@ -539,7 +579,7 @@ export class JEngine {
   }
 
   // Effects
-  effect(name, viewId='view-color') {
+  effect(name, viewId = "view-color") {
     const view = document.getElementById(viewId);
     view.classList.add(name);
     setInterval(() => {

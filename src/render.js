@@ -1,10 +1,10 @@
-import { SPIRTE_PATTERNS, SPRITE_COLORS } from "./constants.js";
+import { SPIRTE_PATTERNS, SPRITE_COLORS, RENDER_CHARS } from "./constants.js";
 import { posInside } from "./utils/graph.js";
 import { jraycast, jSpreadAngles } from "./utils/raycast.js";
 import { vAdd, vRotate } from "./utils/vec.js";
 
-export const RENDER_CHARS =
-  "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+// export const RENDER_CHARS =
+//   "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'.";
 // export const RENDER_CHARS = "░▒▓█";
 
 export function createView(vsize) {
@@ -26,7 +26,8 @@ export function renderMapToView(
   msize,
   fov = Math.PI / 2,
   fMaxDistance = 8.0,
-  vcolor=null,
+  vcolor = null,
+  shade = null
 ) {
   const vRayAngles = jSpreadAngles(vsize[1], fov);
   const rinfos = [];
@@ -39,9 +40,9 @@ export function renderMapToView(
     rinfos.push(rinfo);
   });
 
-  rinfos.forEach(({ perpDistance }, c) => {
+  rinfos.forEach(({ perpDistance, side }, c) => {
     const depth = (fMaxDistance - perpDistance) / fMaxDistance;
-    const depthColor = Math.floor(depth*255);
+    const depthColor = Math.floor(depth * 255 * (side ? 1 : 0.9));
     const charIdx = Math.floor(RENDER_CHARS.length * depth);
     const rows = vsize[0];
     const h = depth * rows;
@@ -49,8 +50,27 @@ export function renderMapToView(
     for (let r = 0; r < rows; r++) {
       if (r >= margin && r < rows - margin) {
         view[r][c] = RENDER_CHARS[charIdx];
+
         if (vcolor) {
-          vcolor[r][c] = `rgb(${depthColor},${depthColor},${depthColor})`;
+          let [red, green, blue] = [
+            depthColor,
+            depthColor,
+            depthColor,
+          ];
+          if (shade === "sides") {
+            [red, green, blue] = [
+              depthColor,
+              Math.min(255, depthColor + side * 32),
+              Math.min(255, depthColor + (1 - side) * 32),
+            ];
+          } else if (Array.isArray(shade)) {
+            [red, green, blue] = [
+              Math.min(255, depthColor + shade[0] * 32),
+              Math.min(255, depthColor + shade[1] * 32),
+              Math.min(255, depthColor + shade[2] * 32),
+            ];
+          }
+          vcolor[r][c] = `rgb(${red},${green},${blue})`;
         }
       }
     }
@@ -67,7 +87,7 @@ export function renderMapToViewSprites(
   mdata,
   sdata,
   msize,
-  fMaxDistance,
+  fMaxDistance
 ) {
   let fDistance = 1;
   const pcell = vpos.map((v) => Math.floor(v));
@@ -97,7 +117,7 @@ export function renderMapToViewSprites(
   const vcenter = [rows / 2, cols / 2].map((v) => Math.floor(v));
   if (scell) {
     const depth = (fMaxDistance - fDistance) / fMaxDistance;
-    
+
     const radius = (depth * rows) / 3;
 
     for (let r = 0; r < rows; r++) {
@@ -146,7 +166,7 @@ export function renderMapToViewSprites2(
   sdata,
   msize,
   fMaxDistance,
-  vcolor = null,
+  vcolor = null
 ) {
   let fDistance = 1;
   const pcell = vpos.map((v) => Math.floor(v));
@@ -177,7 +197,7 @@ export function renderMapToViewSprites2(
   const vcenterSprite = [rows / 2, cols / 2].map((v) => Math.floor(v));
   if (scell) {
     const depth = (fMaxDistance - fDistance) / fMaxDistance;
-    vcenterSprite[0] += Math.floor(rows/4*depth);
+    vcenterSprite[0] += Math.floor((rows / 4) * depth);
     // const spriteSize = vsize.map((v) => Math.floor(((v * depth) / 3) * 2));
     // const spriteSize = vsize.map((v) => Math.floor(v * depth*2/3));
 
@@ -219,7 +239,7 @@ export function renderMapToViewSprites2(
   // }
 }
 
-export function renderItem(itemChar, view, vsize, vcolor = null, frac=3) {
+export function renderItem(itemChar, view, vsize, vcolor = null, frac = 3) {
   const pattern = SPIRTE_PATTERNS[itemChar] ?? SPIRTE_PATTERNS["?"];
   const patternSize = [pattern.length, pattern[0].length];
   const ratio = patternSize[0] / patternSize[1];

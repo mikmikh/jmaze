@@ -152,6 +152,13 @@ pre {
   height: 0.8em;
 }
 
+/* .grid span[style*="color: orange;"] {
+  text-shadow: 0.1em 0.1em rgba(246, 0, 153,0.8),
+             -0.1em -0.1em rgba(15, 210, 255,0.8),
+             0.1em -0.1em rgba(255, 210, 0, 1);
+  animation: wiggle 5s infinite;
+} */
+
 .float {
   position: absolute;
   right: 0;
